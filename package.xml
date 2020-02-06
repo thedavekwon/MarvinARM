@@ -63,7 +63,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
-  <!-- <depend>geometry_msgs</depend> -->
+  <depend>geometry_msgs</depend>
   <depend>visualization_msgs</depend>
   <depend>open_manipulator_msgs</depend>
   <depend>cmake_modules</depend>

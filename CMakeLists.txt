@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   open_manipulator_msgs
   cmake_modules
   tf
+  Eigen3
 )
 
 set(${PROJECT_NAME}_SRCS
@@ -113,7 +114,7 @@ set(${PROJECT_NAME}_SRCS
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs open_manipulator_msgs visualization_msgs
-  DEPENDS EIGEN3
+  DEPENDS
 )
 
 ###########

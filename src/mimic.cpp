@@ -1,37 +1,4 @@
-#include <cmath>
-#include <sstream>
-#include <string>
-
-#include <geometry_msgs/TransformStamped.h>
-#include <ros/ros.h>
-#include <sensor_msgs/JointState.h>
-#include <tf/tf.h>
-#include <tf/transform_broadcaster.h>
-#include <std_msgs/String.h>
-#include <visualization_msgs/MarkerArray.h>
-
-#include "open_manipulator_msgs/OpenManipulatorState.h"
-#include "open_manipulator_msgs/SetJointPosition.h"
-#include "open_manipulator_msgs/SetKinematicsPose.h"
-#include "open_manipulator_msgs/SetDrawingTrajectory.h"
-#include "open_manipulator_msgs/SetActuatorState.h"
-
-#define NUM_OF_JOINT_AND_TOOL 5
-
-void manipulatorStatesCallback(const open_manipulator_msgs::OpenManipulatorState::ConstPtr &msg);
-void jointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg);
-void kinematicsPoseCallback(const open_manipulator_msgs::KinematicsPose::ConstPtr &msg);
-
-bool setTaskSpacePath(ros::ServiceClient &service, std::vector<double> kinematics_pose, double path_time);
-bool setJointSpacePath(double path_time);
-
-void joint1CallBack(const geometry_msgs::TransformStamped::ConstPtr &msg);
-void joint2CallBack(const geometry_msgs::TransformStamped::ConstPtr &msg);
-void joint3CallBack(const geometry_msgs::TransformStamped::ConstPtr &msg);
-void calculateJoints();
-void calculateJointsMarker();
-
-void getMarkerArraysFromKinect(const visualization_msgs::MarkerArray::ConstPtr &msg);
+#include "mimic.h"
 
 std::vector<double> present_joint_angle_;
 std::vector<double> present_kinematic_position_;
@@ -55,45 +22,8 @@ visualization_msgs::MarkerArray currentMarkerArray;
 bool joint1_fetched;
 bool joint2_fetched;
 bool joint3_fetched;
-
 bool markers_fetched;
 
-
-int main(int argc, char ** argv) {
-  joint_name.push_back("joint1");
-  joint_name.push_back("joint2");
-  joint_name.push_back("joint3");
-  joint_name.push_back("joint4");
-  
-  ros::init(argc, argv, "mimic");
-
-  ros::NodeHandle n;
-
-  ros::Subscriber open_manipulator_states_sub_       = n.subscribe("states", 10, &manipulatorStatesCallback);
-  ros::Subscriber open_manipulator_joint_states_sub_ = n.subscribe("joint_states", 10, &jointStatesCallback);
-  ros::Subscriber open_manipulator_kinematics_pose_sub_ = n.subscribe("kinematics_pose", 10, &kinematicsPoseCallback);
-
-  // ros::Subscriber joint1_sub = n.subscribe("/vicon/joint_0/joint_0", 10, &joint1CallBack);
-  // ros::Subscriber joint2_sub = n.subscribe("/vicon/joint_1/joint_1", 10, &joint2CallBack);
-  // ros::Subscriber joint3_sub = n.subscribe("/vicon/joint_2/joint_2", 10, &joint3CallBack);
-
-  ros::Subscriber markerarrays_sub = n.subscribe("/body_tracking_data", 10, &getMarkerArraysFromKinect);
-
-  goal_task_space_path_position_only_client_ = n.serviceClient<open_manipulator_msgs::SetKinematicsPose>("goal_task_space_path_position_only");
-  goal_joint_space_path_client_ = n.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_joint_space_path");
-
-  ros::Rate loop_rate(10);
-  while ( ros::ok() ) {
-    // if (joint1_fetched && joint2_fetched && joint3_fetched) {
-    if (markers_fetched) {
-      calculateJointsMarker();
-      setJointSpacePath(1);
-    }
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  return 0;
-}
 
 void getMarkerArraysFromKinect(const visualization_msgs::MarkerArray::ConstPtr &msg) {
   markers_fetched = true;
@@ -125,47 +55,6 @@ void joint3CallBack(const geometry_msgs::TransformStamped::ConstPtr &msg) {
   tf::Transform tmp(tf::Quaternion(msg->transform.rotation.x, msg->transform.rotation.y, msg->transform.rotation.z, msg->transform.rotation.w), tf::Vector3(msg->transform.translation.x, msg->transform.translation.y, msg->transform.translation.z));
   br3.sendTransform(tf::StampedTransform(tmp, ros::Time::now(), "world", "/vicon/joint_2/joint_2"));
   joint3_fetched = true;
-}
-
-//
-// void calculateJoints() {
-//   tf::Vector3 joint1(joint1_tf.transform.translation.x, joint1_tf.transform.translation.y, joint1_tf.transform.translation.z);
-//   tf::Vector3 joint2(joint2_tf.transform.translation.x, joint2_tf.transform.translation.y, joint2_tf.transform.translation.z);
-//   tf::Vector3 joint3(joint3_tf.transform.translation.x, joint3_tf.transform.translation.y, joint3_tf.transform.translation.z);
-
-//   tf::Vector3 link12_normed = (joint2-joint1).normalize();
-//   tf::Vector3 link23_normed = (joint3-joint2).normalize();
-
-//   // update_joint_angle[1] = acos((link12_normed).dot(joint1.normalize()))-M_PI;
-//   update_joint_angle[1] = -0.2;
-//   update_joint_angle[2] = acos((link23_normed).dot(link12_normed))*180/M_PI;
-// }
-
-void calculateJointsMarker() {
-  tf::Vector3 joint2(currentMarkerArray.markers[2].pose.position.x, currentMarkerArray.markers[2].pose.position.y, currentMarkerArray.markers[2].pose.position.z);
-  tf::Vector3 joint11(currentMarkerArray.markers[11].pose.position.x, currentMarkerArray.markers[11].pose.position.y, currentMarkerArray.markers[11].pose.position.z);
-  tf::Vector3 joint12(currentMarkerArray.markers[12].pose.position.x, currentMarkerArray.markers[12].pose.position.y, currentMarkerArray.markers[12].pose.position.z);
-  tf::Vector3 joint13(currentMarkerArray.markers[13].pose.position.x, currentMarkerArray.markers[13].pose.position.y, currentMarkerArray.markers[13].pose.position.z);
-  tf::Vector3 joint14(currentMarkerArray.markers[14].pose.position.x, currentMarkerArray.markers[14].pose.position.y, currentMarkerArray.markers[14].pose.position.z);
-  tf::Vector3 joint15(currentMarkerArray.markers[15].pose.position.x, currentMarkerArray.markers[15].pose.position.y, currentMarkerArray.markers[15].pose.position.z);
-  tf::Vector3 joint16(currentMarkerArray.markers[16].pose.position.x, currentMarkerArray.markers[16].pose.position.y, currentMarkerArray.markers[16].pose.position.z);
-
-  // comment 4 now: tf::Vector3 link11_2_normed = (joint11-joint2).normalize();
-  tf::Vector3 link02_11_normed = (joint2-joint11).normalize();
-  tf::Vector3 link11_12_normed = (joint11-joint12).normalize();
-  tf::Vector3 link12_13_normed = (joint12-joint13).normalize();
-  tf::Vector3 link13_14_normed = (joint13-joint14).normalize();
-  tf::Vector3 link14_15_normed = (joint14-joint15).normalize();
-  tf::Vector3 link14_16_normed = (joint14-joint16).normalize();
-
-  // update_joint_angle[1] = acos((link12_normed).dot(joint1.normalize()))-M_PI;
-  update_joint_angle[1] = -0.3;
-  update_joint_angle[3] = acos((-1*link02_11_normed).dot(link11_12_normed)); //shoulder angle
-  //update_joint_angle[?] = acos((-1*link11_12_normed).dot(link12_13_normed)); //im a little confused about this one
-  //update_joint_angle[?] = acos((-1*link12_13_normed).dot(link13_14_normed)); //elbow angle
-  //update_joint_angle[?] = acos((-1*link13_14_normed).dot(link14_15_normed)); //wrist angle
-  //update_joint_angle[?] = acos((link14_15_normed).dot(link14_16_normed)); //hand angle (can only control open/closed)
-  std::cout << update_joint_angle[3]*180/M_PI << std::endl;
 }
 
 // Update New Joint States
@@ -204,10 +93,10 @@ void jointStatesCallback(const sensor_msgs::JointState::ConstPtr &msg)
   temp_angle.resize(NUM_OF_JOINT_AND_TOOL);
   for(int i = 0; i < msg->name.size(); i ++)
   {
-    if(!msg->name.at(i).compare("joint1"))  temp_angle.at(0) = (msg->position.at(i));
+    if(!msg->name.at(i).compare("joint1")) temp_angle.at(0) = (msg->position.at(i));
     else if(!msg->name.at(i).compare("joint2"))  temp_angle.at(1) = (msg->position.at(i));
     else if(!msg->name.at(i).compare("joint3"))  temp_angle.at(2) = (msg->position.at(i));
-    else if(!msg->name.at(i).compare("joint4"))  temp_angle.at(3) = (msg->position.at(i));
+    else if(!msg->name.at(i).compare("joivisualization_msgs::MarkerArraynt4"))  temp_angle.at(3) = (msg->position.at(i));
     else if(!msg->name.at(i).compare("gripper"))  temp_angle.at(4) = (msg->position.at(i));
   }
   present_joint_angle_ = temp_angle;
@@ -249,4 +138,103 @@ bool setTaskSpacePath(std::vector<double> kinematics_pose, double path_time)
     return srv.response.is_planned;
   }
   return false;
+}
+
+Arm::Arm(int type) {
+	if (type == LEFT) {
+		idx_neck = 3;
+		idx_spinechest = 2;
+		idx_clavicle = 4;
+		idx_thumb = 10;
+	} else if (type == RIGHT) {
+		idx_neck = 3;
+		idx_spinechest = 2;
+		idx_clavicle = 11;
+		idx_shoulder = 12;
+		idx_elbow = 13;
+		idx_wrist = 14;
+		idx_hand = 15;
+		idx_handtip = 16;
+		idx_thumb = 17;
+	}
+}
+
+void Arm::calculateJointAngle(std::vector<double> &update_angle) {
+  visualization_msgs::MarkerArray markerarray = currentMarkerArray;
+
+	Eigen::Vector3f neck = marker2Vector3(markerarray, idx_neck); //3
+	Eigen::Vector3f spinechest = marker2Vector3(markerarray, idx_spinechest); //2
+	Eigen::Vector3f clavicle = marker2Vector3(markerarray, idx_clavicle); //11
+	Eigen::Vector3f shoulder = marker2Vector3(markerarray, idx_shoulder); //12
+	Eigen::Vector3f elbow = marker2Vector3(markerarray, idx_elbow); //13
+	Eigen::Vector3f wrist = marker2Vector3(markerarray, idx_wrist); //14
+	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand); //15
+	Eigen::Vector3f handtip = marker2Vector3(markerarray, idx_handtip);
+  Eigen::Vector3f thumb = marker2Vector3(markerarray, idx_thumb);
+  
+	// 3 =elbow
+	//4 = wrist
+	// gripper = hand
+
+	Eigen::Vector3f link12 = (elbow - shoulder).normalized();
+	Eigen::Vector3f link23 = (wrist - elbow).normalized();
+	Eigen::Vector3f link34 = (handtip - wrist).normalized();
+	Eigen::Vector3f link35 = (thumb - wrist).normalized();
+
+	Eigen::Vector3f plane1 = (neck - shoulder).normalized();
+	Eigen::Vector3f plane2 = (spinechest - shoulder).normalized();
+	Eigen::Vector3f ortho_space = (plane1.cross(plane2)).normalized();
+	Eigen::Vector3f ortho_vect = (ortho_space * ortho_space.transpose()) * link12;
+	Eigen::Vector3f parall_vect = link12 - ortho_vect;
+
+
+
+	update_joint_angle[0] = acos((plane1).dot(ortho_vect));
+	update_joint_angle[1] = acos((plane1).dot(parall_vect));
+	update_joint_angle[2] = acos((-1*link12).dot(link23))+M_PI/2;
+	update_joint_angle[3] = acos((-1*link23).dot(link34));
+
+  std::cout << update_joint_angle[0]*180/M_PI << ", " << update_joint_angle[1]*180/M_PI << ", " << update_joint_angle[2]*180/M_PI << ", " << update_joint_angle[3]*180/M_PI << std::endl;
+}
+
+Eigen::Vector3f marker2Vector3(const visualization_msgs::MarkerArray& markerarray, int idx) {
+	return Eigen::Vector3f(markerarray.markers[idx].pose.position.x, markerarray.markers[idx].pose.position.y, markerarray.markers[idx].pose.position.y);
+}
+
+int main(int argc, char ** argv) {
+  joint_name.push_back("joint1");
+  joint_name.push_back("joint2");
+  joint_name.push_back("joint3");
+  joint_name.push_back("joint4");
+  
+  ros::init(argc, argv, "mimic");
+
+  ros::NodeHandle n;
+
+  ros::Subscriber open_manipulator_states_sub_          = n.subscribe("states", 10, &manipulatorStatesCallback);
+  ros::Subscriber open_manipulator_joint_states_sub_    = n.subscribe("joint_states", 10, &jointStatesCallback);
+  ros::Subscriber open_manipulator_kinematics_pose_sub_ = n.subscribe("kinematics_pose", 10, &kinematicsPoseCallback);
+
+  // ros::Subscriber joint1_sub = n.subscribe("/vicon/joint_0/joint_0", 10, &joint1CallBack);
+  // ros::Subscriber joint2_sub = n.subscribe("/vicon/joint_1/joint_1", 10, &joint2CallBack);
+  // ros::Subscriber joint3_sub = n.subscribe("/vicon/joint_2/joint_2", 10, &joint3CallBack);
+
+  ros::Subscriber markerarrays_sub = n.subscribe("/body_tracking_data", 10, &getMarkerArraysFromKinect);
+
+  goal_task_space_path_position_only_client_ = n.serviceClient<open_manipulator_msgs::SetKinematicsPose>("goal_task_space_path_position_only");
+  goal_joint_space_path_client_ = n.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_joint_space_path");
+
+  Arm marvin_right = Arm(RIGHT);
+
+  ros::Rate loop_rate(10);
+  while ( ros::ok() ) {
+    // if (joint1_fetched && joint2_fetched && joint3_fetched) {
+    if (markers_fetched) {
+      marvin_right.calculateJointAngle(update_joint_angle);
+      setJointSpacePath(1);
+    }
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+  return 0;
 }
