@@ -171,10 +171,6 @@ void Arm::calculateJointAngle(std::vector<double> &update_angle) {
 	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand); //15
 	Eigen::Vector3f handtip = marker2Vector3(markerarray, idx_handtip);
   Eigen::Vector3f thumb = marker2Vector3(markerarray, idx_thumb);
-  
-	// 3 =elbow
-	//4 = wrist
-	// gripper = hand
 
 	Eigen::Vector3f link12 = (elbow - shoulder).normalized();
 	Eigen::Vector3f link23 = (wrist - elbow).normalized();
@@ -190,9 +186,9 @@ void Arm::calculateJointAngle(std::vector<double> &update_angle) {
 
 
 	update_joint_angle[0] = acos((plane1).dot(ortho_vect));
-	update_joint_angle[1] = acos((plane1).dot(parall_vect));
-	update_joint_angle[2] = acos((-1*link12).dot(link23))+M_PI/2;
-	update_joint_angle[3] = acos((-1*link23).dot(link34));
+	update_joint_angle[1] = acos((plane1).dot(parall_vect))-M_PI/2;
+	update_joint_angle[2] = -M_PI/2;//acos((-1*link12).dot(link23));
+	update_joint_angle[3] = 0;//acos((-1*link23).dot(link34));
 
   std::cout << update_joint_angle[0]*180/M_PI << ", " << update_joint_angle[1]*180/M_PI << ", " << update_joint_angle[2]*180/M_PI << ", " << update_joint_angle[3]*180/M_PI << std::endl;
 }
