@@ -161,7 +161,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(mimic src/mimic.cpp)
+add_executable(mimic src/mimic.cpp src/Arm.cpp)
 target_link_libraries(mimic ${catkin_LIBRARIES})
 add_dependencies(mimic mimic)
 
