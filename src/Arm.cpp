@@ -2,7 +2,8 @@
 
 const std::vector<std::string> Arm::joint_name{"joint1", "joint2", "joint3", "joint4"};
 
-Arm::Arm(int type) {
+Arm::Arm(int _type) {
+  type = _type;
   idx_neck = 3;
   idx_spinechest = 2;
 	if (type == LEFT) {
@@ -37,13 +38,13 @@ Arm::Arm(int type) {
 
 
 void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray) {
-	Eigen::Vector3f neck = marker2Vector3(markerarray, idx_neck);
-	Eigen::Vector3f spinechest = marker2Vector3(markerarray, idx_spinechest);
-	Eigen::Vector3f clavicle = marker2Vector3(markerarray, idx_clavicle);
-	Eigen::Vector3f shoulder = marker2Vector3(markerarray, idx_shoulder);
-	Eigen::Vector3f elbow = marker2Vector3(markerarray, idx_elbow);
-	Eigen::Vector3f wrist = marker2Vector3(markerarray, idx_wrist);
-	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand);
+	Eigen::Vector3f neck = marker2Vector3(markerarray, idx_neck); //3
+	Eigen::Vector3f spinechest = marker2Vector3(markerarray, idx_spinechest); //2
+	Eigen::Vector3f clavicle = marker2Vector3(markerarray, idx_clavicle); //11
+	Eigen::Vector3f shoulder = marker2Vector3(markerarray, idx_shoulder); //12
+	Eigen::Vector3f elbow = marker2Vector3(markerarray, idx_elbow); //13
+	Eigen::Vector3f wrist = marker2Vector3(markerarray, idx_wrist); //14
+	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand); //15
 	Eigen::Vector3f handtip = marker2Vector3(markerarray, idx_handtip);
   Eigen::Vector3f thumb = marker2Vector3(markerarray, idx_thumb);
 
@@ -58,18 +59,22 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 	Eigen::Vector3f ortho_vect = (ortho_space * ortho_space.transpose()) * link12;
 	Eigen::Vector3f parall_vect = link12 - ortho_vect;
 
-  std::cout << 1 << std::endl;
+	update_joint_angle[0] = acos((link12).dot(ortho_vect));
+	update_joint_angle[1] = -acos((plane1).dot(parall_vect)) + M_PI - M_PI/18;
+	update_joint_angle[2] = -acos((-1*link12).dot(link23)) + M_PI/2 + M_PI/10;
+	// update_joint_angle[3] = atan2((-1*link23).cross(link34).norm(), (-1*link23).dot(link34));
+   update_joint_angle[3] = 0;
 
-	update_joint_angle[0] = acos((plane1).dot(ortho_vect));
-	update_joint_angle[1] = acos((plane1).dot(parall_vect))-M_PI/2;
-	update_joint_angle[2] = -M_PI/2;//acos((-1*link12).dot(link23));
-	update_joint_angle[3] = 0;//acos((-1*link23).dot(link34));
-
+  //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
+  //std::cout << "---" << std::endl;
+  if (type == LEFT) std::cout << "LEFT" << std::endl;
+  if (type == RIGHT) std::cout << "RIGHT" << std::endl;
   std::cout << update_joint_angle[0]*180/M_PI << ", " << update_joint_angle[1]*180/M_PI << ", " << update_joint_angle[2]*180/M_PI << ", " << update_joint_angle[3]*180/M_PI << std::endl;
 }
 
+
 Eigen::Vector3f marker2Vector3(const visualization_msgs::MarkerArray& markerarray, int idx) {
-	return Eigen::Vector3f(markerarray.markers[idx].pose.position.x, markerarray.markers[idx].pose.position.y, markerarray.markers[idx].pose.position.y);
+	return Eigen::Vector3f(markerarray.markers[idx].pose.position.x, markerarray.markers[idx].pose.position.y, markerarray.markers[idx].pose.position.z);
 }
 
 

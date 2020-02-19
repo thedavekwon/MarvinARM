@@ -13,15 +13,15 @@ int main(int argc, char ** argv) {
   ros::Subscriber markerarrays_sub = n.subscribe("/body_tracking_data", 100, &getMarkerArraysFromKinect);
 
   Arm marvin_right = Arm(RIGHT);
-  Arm marvin_left  = Arm(LEFT);
+  // Arm marvin_left  = Arm(LEFT);
 
   ros::Rate loop_rate(10);
   while ( ros::ok() ) {
     if (markers_fetched) {
       marvin_right.calculateJointAngle(currentMarkerArray);
-      marvin_left.calculateJointAngle(currentMarkerArray);
+      // marvin_left.calculateJointAngle(currentMarkerArray);
       marvin_right.setJointSpacePath(1);
-      marvin_left.setJointSpacePath(1);
+      // marvin_left.setJointSpacePath(1);
     }
     ros::spinOnce();
     loop_rate.sleep();

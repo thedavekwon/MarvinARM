@@ -24,7 +24,7 @@
 
 class Arm {
 public:
-	Arm(int type);
+	Arm(int _type);
 	void calculateJointAngle(const visualization_msgs::MarkerArray markerarray);
   bool setJointSpacePath(double path_time);
 
@@ -49,6 +49,7 @@ private:
 
   bool setTaskSpacePath(ros::ServiceClient &service, std::vector<double> kinematics_pose, double path_time);
 
+	int type;
 	int idx_neck;
 	int idx_spinechest;
 	int idx_clavicle;
