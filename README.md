@@ -1,5 +1,5 @@
 # MarvinARM
-![Marvin](images/marvin.jpeg){ height=50% width=50%}
+![Marvin](images/marvin.jpeg)
 
 ## Requirement
 ```
