@@ -9,19 +9,23 @@ visualization_msgs::MarkerArray currentMarkerArray;
 int main(int argc, char ** argv) {
   ros::init(argc, argv, "mimic");
 
+  int arm_type;
   ros::NodeHandle n;
+  ros::NodeHandle nh("~");
+  nh.getParam("arm_type", arm_type);
+  std::cout << "arm_type " << arm_type << std::endl;
+  if (arm_type == LEFT) std::cout << "LEFT" << std::endl;
+  else if (arm_type == RIGHT) std::cout << "RIGHT" << std::endl;
+  std::cout << arm_type << std::endl;
   ros::Subscriber markerarrays_sub = n.subscribe("/body_tracking_data", 100, &getMarkerArraysFromKinect);
 
-  Arm marvin_right = Arm(RIGHT);
-  // Arm marvin_left  = Arm(LEFT);
+  Arm marvin_arm  = Arm(arm_type);
 
   ros::Rate loop_rate(10);
   while ( ros::ok() ) {
     if (markers_fetched) {
-      marvin_right.calculateJointAngle(currentMarkerArray);
-      // marvin_left.calculateJointAngle(currentMarkerArray);
-      marvin_right.setJointSpacePath(1);
-      // marvin_left.setJointSpacePath(1);
+      marvin_arm.calculateJointAngle(currentMarkerArray);
+      marvin_arm.setJointSpacePath(1);
     }
     ros::spinOnce();
     loop_rate.sleep();

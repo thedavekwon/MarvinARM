@@ -62,3 +62,5 @@ private:
 };
 
 Eigen::Vector3f marker2Vector3(const visualization_msgs::MarkerArray& markerarray, int idx);
+
+tf::Vector3 marker2Vector3t(const visualization_msgs::MarkerArray& markerarray, int idx);

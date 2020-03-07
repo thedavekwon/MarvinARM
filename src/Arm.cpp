@@ -48,10 +48,18 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 	Eigen::Vector3f handtip = marker2Vector3(markerarray, idx_handtip);
   Eigen::Vector3f thumb = marker2Vector3(markerarray, idx_thumb);
 
+  //tf::Vector3 shouldert = marker2Vector3t(markerarray, idx_shoulder);
+  //tf::Vector3 elbowt = marker2Vector3t(markerarray, idx_elbow);
+  //tf::Vector3 wristt = marker2Vector3t(markerarray, idx_wrist);
+  //tf::Vector3 link12t = -(elbowt - shouldert).normalize();
+	//tf::Vector3 link23t = (wristt - elbowt).normalize();
+  //update_joint_angle[2] = link12t.angle(link23t);
+
 	Eigen::Vector3f link12 = (elbow - shoulder).normalized();
 	Eigen::Vector3f link23 = (wrist - elbow).normalized();
 	Eigen::Vector3f link34 = (handtip - wrist).normalized();
 	Eigen::Vector3f link35 = (thumb - wrist).normalized();
+  Eigen::Vector3f rose_is_confused = (spinechest - neck).normalized();
 
 	Eigen::Vector3f plane1 = (neck - shoulder).normalized();
 	Eigen::Vector3f plane2 = (spinechest - shoulder).normalized();
@@ -59,16 +67,41 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 	Eigen::Vector3f ortho_vect = (ortho_space * ortho_space.transpose()) * link12;
 	Eigen::Vector3f parall_vect = link12 - ortho_vect;
 
-	update_joint_angle[0] = acos((link12).dot(ortho_vect));
-	update_joint_angle[1] = -acos((plane1).dot(parall_vect)) + M_PI - M_PI/18;
-	update_joint_angle[2] = -acos((-1*link12).dot(link23)) + M_PI/2 + M_PI/10;
-	// update_joint_angle[3] = atan2((-1*link23).cross(link34).norm(), (-1*link23).dot(link34));
-   update_joint_angle[3] = 0;
+  // trying something to get orientation... idk if its needed
+  // Matrix3f ori;
+  // ori.row(0) = -1*link12;
+  // ori.row(1) = link23;
+  // ori.row(2) = ((-1*link12).cross(link23)).norm();
+  // plus_minus = ori.determinant();
+  // if plus_minus > 0, do nothing.
+  // if plus_minus < 0, negate angle.
+  // -rose :)
 
-  //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
-  //std::cout << "---" << std::endl;
-  if (type == LEFT) std::cout << "LEFT" << std::endl;
-  if (type == RIGHT) std::cout << "RIGHT" << std::endl;
+  if (type == RIGHT) {
+    update_joint_angle[0] = -2*(acos((link12).dot(ortho_vect))+M_PI/2);
+    update_joint_angle[1] = atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm());
+    update_joint_angle[2] = atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm());
+    // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
+    update_joint_angle[3] = 0;
+
+    // update_joint_angle[3] = 2*atan2((link34-link35).norm(), (link34+link35).norm());
+
+    //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
+    //std::cout << "---" << std::endl;
+  } else if (type == LEFT) {
+    update_joint_angle[0] = -2*(acos((link12).dot(ortho_vect)));
+    update_joint_angle[1] = atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm());
+    update_joint_angle[2] = atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm());
+    // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
+    update_joint_angle[3] = 0;
+
+    // update_joint_angle[3] = 2*atan2((link34-link35).norm(), (link34+link35).norm());
+
+    //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
+    //std::cout << "---" << std::endl;
+  }
+  if (type == LEFT) std::cout << "LEFT ";
+  else if (type == RIGHT) std::cout << "RIGHT ";
   std::cout << update_joint_angle[0]*180/M_PI << ", " << update_joint_angle[1]*180/M_PI << ", " << update_joint_angle[2]*180/M_PI << ", " << update_joint_angle[3]*180/M_PI << std::endl;
 }
 
@@ -77,6 +110,9 @@ Eigen::Vector3f marker2Vector3(const visualization_msgs::MarkerArray& markerarra
 	return Eigen::Vector3f(markerarray.markers[idx].pose.position.x, markerarray.markers[idx].pose.position.y, markerarray.markers[idx].pose.position.z);
 }
 
+tf::Vector3 marker2Vector3t(const visualization_msgs::MarkerArray& markerarray, int idx) {
+	return tf::Vector3(markerarray.markers[idx].pose.position.x, markerarray.markers[idx].pose.position.y, markerarray.markers[idx].pose.position.z);
+}
 
 // Update New Joint States
 bool Arm::setJointSpacePath(double path_time)
@@ -90,6 +126,7 @@ bool Arm::setJointSpacePath(double path_time)
   {
     return srv.response.is_planned;
   }
+  std::cout << "debug" << std::endl;
   return false;
 }
 
