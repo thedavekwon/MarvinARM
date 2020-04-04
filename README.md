@@ -17,3 +17,5 @@ catkin_make
 ```
 roslaunch mimic mimic.launch
 ```
+## Sources
+1. [ROBOTIS-GIT/open_manipulator](https://github.com/ROBOTIS-GIT/open_manipulator)
