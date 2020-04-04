@@ -6,55 +6,47 @@
   <arg name="dynamixel_usb_port_right"     default="/dev/ttyACM0"/>
   <arg name="dynamixel_baud_rate"    default="1000000"/>
   <arg name="control_period"         default="0.010"/>
-  <arg name="use_platform"           default="true"/>
+  <arg name="use_platform"           default="false"/>
 
   <arg name="use_moveit"             default="false"/>
   <arg name="planning_group_name"    default="arm"/>
   <arg name="moveit_sample_duration" default="0.050"/>
 
+  <node name="left_$(arg robot_name)" pkg="open_manipulator_controller" type="open_manipulator_controller" output="screen" args="$(arg dynamixel_usb_port_left) $(arg dynamixel_baud_rate)">
+      <param name="using_platform"       value="$(arg use_platform)"/>
+      <param name="using_moveit"         value="$(arg use_moveit)"/>
+      <param name="planning_group_name"  value="$(arg planning_group_name)"/>
+      <param name="control_period"       value="$(arg control_period)"/>
+      <param name="moveit_sample_duration"  value="$(arg moveit_sample_duration)"/>
+  </node>
+
   <group ns="left_$(arg robot_name)">
-    <node name="$(arg robot_name)" pkg="open_manipulator_controller" type="open_manipulator_controller" output="screen" args="$(arg dynamixel_usb_port_left) $(arg dynamixel_baud_rate)">
-        <param name="using_platform"       value="$(arg use_platform)"/>
-        <param name="using_moveit"         value="$(arg use_moveit)"/>
-        <param name="planning_group_name"  value="$(arg planning_group_name)"/>
-        <param name="control_period"       value="$(arg control_period)"/>
-        <param name="moveit_sample_duration"  value="$(arg moveit_sample_duration)"/>
+    <node name="control_gui" pkg="open_manipulator_control_gui" type="open_manipulator_control_gui" output="screen">
+      <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
     </node>
 
-    <group ns="$(arg robot_name)">
-      <node name="control_gui" pkg="open_manipulator_control_gui" type="open_manipulator_control_gui" output="screen">
-        <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
-      </node>
-    </group>
-
-    <group ns="$(arg robot_name)">
-      <node name="mimic" pkg="mimic" type="mimic" output="screen">
-        <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
-        <param name="arm_type" type="int" value="2" />
-      </node>
-    </group>
+    <node name="mimic" pkg="mimic" type="mimic" output="screen">
+      <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
+      <param name="arm_type" type="int" value="2" />
+    </node>
   </group>
 
+  <node name="right_$(arg robot_name)" pkg="open_manipulator_controller" type="open_manipulator_controller" output="screen" args="$(arg dynamixel_usb_port_right) $(arg dynamixel_baud_rate)">
+      <param name="using_platform"       value="$(arg use_platform)"/>
+      <param name="using_moveit"         value="$(arg use_moveit)"/>
+      <param name="planning_group_name"  value="$(arg planning_group_name)"/>
+      <param name="control_period"       value="$(arg control_period)"/>
+      <param name="moveit_sample_duration"  value="$(arg moveit_sample_duration)"/>
+  </node>
+
   <group ns="right_$(arg robot_name)">
-    <node name="$(arg robot_name)" pkg="open_manipulator_controller" type="open_manipulator_controller" output="screen" args="$(arg dynamixel_usb_port_right) $(arg dynamixel_baud_rate)">
-        <param name="using_platform"       value="$(arg use_platform)"/>
-        <param name="using_moveit"         value="$(arg use_moveit)"/>
-        <param name="planning_group_name"  value="$(arg planning_group_name)"/>
-        <param name="control_period"       value="$(arg control_period)"/>
-        <param name="moveit_sample_duration"  value="$(arg moveit_sample_duration)"/>
+    <node name="control_gui" pkg="open_manipulator_control_gui" type="open_manipulator_control_gui" output="screen">
+      <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
     </node>
 
-    <group ns="$(arg robot_name)">
-      <node name="control_gui" pkg="open_manipulator_control_gui" type="open_manipulator_control_gui" output="screen">
-        <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
-      </node>
-    </group>
-
-    <group ns="$(arg robot_name)">
-      <node name="mimic" pkg="mimic" type="mimic" output="screen">
-        <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
-        <param name="arm_type" type="int" value="1" />
-      </node>
-    </group>
+    <node name="mimic" pkg="mimic" type="mimic" output="screen">
+      <remap from="kinematics_pose" to="$(arg end_effector)/kinematics_pose"/>
+      <param name="arm_type" type="int" value="1" />
+    </node>
   </group>
 </launch>
