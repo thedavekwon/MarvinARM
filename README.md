@@ -5,17 +5,25 @@
 ```
 ROS Melodic
 Azure Kinect SDK
+Azure Kinect ROS driver
 Openmanipulator X
 ```
 ## Installation
 ```
-cd ~/catkin_ws
+cd ~/catkin_ws/src
 git clone https://github.com/thedavekwon/MarvinARM.git
+rosdep install --from-paths MarvinARM --ignore-src -r -y
+
+cd ~/catkin_ws
 catkin_make
 ```
 ## Usage
 ```
 roslaunch mimic mimic.launch
+
+# for launching gazebo
+roslaunch mimic mimic_gazebo.launch
 ```
 ## Sources
 1. [ROBOTIS-GIT/open_manipulator](https://github.com/ROBOTIS-GIT/open_manipulator)
+2. [microsoft/Azure_Kinect_ROS_Driver](https://github.com/microsoft/Azure_Kinect_ROS_Driver)

@@ -17,7 +17,7 @@
 
   <!-- World fixed joint-->
   <joint name="world_fixed" type="fixed">
-    <origin xyz="-0.2 0 0.5" rpy="0 1.57079632679 3.14159265359"/>
+    <origin xyz="-0.1 0 0.5" rpy="0 1.57079632679 3.14159265359"/>
     <parent link="world"/>
     <child link="link1"/>
   </joint>
