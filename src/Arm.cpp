@@ -36,6 +36,9 @@ Arm::Arm(int _type) {
   goal_joint_space_path_client_ = n.serviceClient<open_manipulator_msgs::SetJointPosition>("goal_joint_space_path");
 }
 
+double boundMinMax(double angle) {
+  return std::min(M_PI/2, std::max(-M_PI/2, angle));
+}
 
 void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray) {
 	Eigen::Vector3f neck = marker2Vector3(markerarray, idx_neck); //3
@@ -47,13 +50,6 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand); //15
 	Eigen::Vector3f handtip = marker2Vector3(markerarray, idx_handtip);
   Eigen::Vector3f thumb = marker2Vector3(markerarray, idx_thumb);
-
-  //tf::Vector3 shouldert = marker2Vector3t(markerarray, idx_shoulder);
-  //tf::Vector3 elbowt = marker2Vector3t(markerarray, idx_elbow);
-  //tf::Vector3 wristt = marker2Vector3t(markerarray, idx_wrist);
-  //tf::Vector3 link12t = -(elbowt - shouldert).normalize();
-	//tf::Vector3 link23t = (wristt - elbowt).normalize();
-  //update_joint_angle[2] = link12t.angle(link23t);
 
 	Eigen::Vector3f link12 = (elbow - shoulder).normalized();
 	Eigen::Vector3f link23 = (wrist - elbow).normalized();
@@ -78,9 +74,9 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
   // -rose :)
 
   if (type == RIGHT) {
-    update_joint_angle[0] = -2*(acos((link12).dot(ortho_vect))+M_PI/2);
-    update_joint_angle[1] = atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm());
-    update_joint_angle[2] = atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm());
+    update_joint_angle[0] = boundMinMax(-3*(acos((link12).dot(ortho_vect))-M_PI/2));
+    update_joint_angle[1] = boundMinMax(atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm()));
+    update_joint_angle[2] = boundMinMax(2*atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm()));
     // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
     update_joint_angle[3] = 0;
 
@@ -89,9 +85,9 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
     //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
     //std::cout << "---" << std::endl;
   } else if (type == LEFT) {
-    update_joint_angle[0] = -2*(acos((link12).dot(ortho_vect)));
-    update_joint_angle[1] = atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm());
-    update_joint_angle[2] = atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm());
+    update_joint_angle[0] = boundMinMax(3*(acos((link12).dot(ortho_vect))-M_PI/2));
+    update_joint_angle[1] = boundMinMax(atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm()));
+    update_joint_angle[2] = boundMinMax(2*atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm()));
     // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
     update_joint_angle[3] = 0;
 
