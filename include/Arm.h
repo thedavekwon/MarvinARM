@@ -21,6 +21,7 @@
 #define LEFT 1
 #define RIGHT 2
 #define NUM_OF_JOINT_AND_TOOL 5
+#define DEBUG 1
 
 class Arm {
 public:

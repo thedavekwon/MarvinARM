@@ -1,5 +1,6 @@
 # MarvinARM
 ![Marvin](images/marvin.jpeg)
+by Do Hyung (Dave) Kwon and Rose Gebhardt
 
 ## Requirement
 ```

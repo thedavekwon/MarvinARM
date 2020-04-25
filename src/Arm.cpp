@@ -63,42 +63,25 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 	Eigen::Vector3f ortho_vect = (ortho_space * ortho_space.transpose()) * link12;
 	Eigen::Vector3f parall_vect = link12 - ortho_vect;
 
-  // trying something to get orientation... idk if its needed
-  // Matrix3f ori;
-  // ori.row(0) = -1*link12;
-  // ori.row(1) = link23;
-  // ori.row(2) = ((-1*link12).cross(link23)).norm();
-  // plus_minus = ori.determinant();
-  // if plus_minus > 0, do nothing.
-  // if plus_minus < 0, negate angle.
-  // -rose :)
-
   if (type == RIGHT) {
     update_joint_angle[0] = boundMinMax(-3*(acos((link12).dot(ortho_vect))-M_PI/2));
     update_joint_angle[1] = boundMinMax(atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm()));
     update_joint_angle[2] = boundMinMax(2*atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm()));
     // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
     update_joint_angle[3] = 0;
-
     // update_joint_angle[3] = 2*atan2((link34-link35).norm(), (link34+link35).norm());
-
-    //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
-    //std::cout << "---" << std::endl;
   } else if (type == LEFT) {
     update_joint_angle[0] = boundMinMax(3*(acos((link12).dot(ortho_vect))-M_PI/2));
     update_joint_angle[1] = boundMinMax(atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm()));
     update_joint_angle[2] = boundMinMax(2*atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm()));
     // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
     update_joint_angle[3] = 0;
-
     // update_joint_angle[3] = 2*atan2((link34-link35).norm(), (link34+link35).norm());
-
-    //std::cout << update_joint_angle[0]*180/M_PI << " , " << update_joint_angle[1]*180/M_PI << std::endl;
-    //std::cout << "---" << std::endl;
   }
   if (type == LEFT) std::cout << "LEFT ";
   else if (type == RIGHT) std::cout << "RIGHT ";
-  std::cout << update_joint_angle[0]*180/M_PI << ", " << update_joint_angle[1]*180/M_PI << ", " << update_joint_angle[2]*180/M_PI << ", " << update_joint_angle[3]*180/M_PI << std::endl;
+  if (DEBUG)
+    std::cout << update_joint_angle[0]*180/M_PI << ", " << update_joint_angle[1]*180/M_PI << ", " << update_joint_angle[2]*180/M_PI << ", " << update_joint_angle[3]*180/M_PI << std::endl;
 }
 
 
