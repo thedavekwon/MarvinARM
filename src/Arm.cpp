@@ -41,13 +41,13 @@ double boundMinMax(double angle) {
 }
 
 void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray) {
-	Eigen::Vector3f neck = marker2Vector3(markerarray, idx_neck); //3
-	Eigen::Vector3f spinechest = marker2Vector3(markerarray, idx_spinechest); //2
-	Eigen::Vector3f clavicle = marker2Vector3(markerarray, idx_clavicle); //11
-	Eigen::Vector3f shoulder = marker2Vector3(markerarray, idx_shoulder); //12
-	Eigen::Vector3f elbow = marker2Vector3(markerarray, idx_elbow); //13
-	Eigen::Vector3f wrist = marker2Vector3(markerarray, idx_wrist); //14
-	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand); //15
+	Eigen::Vector3f neck = marker2Vector3(markerarray, idx_neck);
+	Eigen::Vector3f spinechest = marker2Vector3(markerarray, idx_spinechest); 
+	Eigen::Vector3f clavicle = marker2Vector3(markerarray, idx_clavicle); 
+	Eigen::Vector3f shoulder = marker2Vector3(markerarray, idx_shoulder);
+	Eigen::Vector3f elbow = marker2Vector3(markerarray, idx_elbow); 
+	Eigen::Vector3f wrist = marker2Vector3(markerarray, idx_wrist); 
+	Eigen::Vector3f hand = marker2Vector3(markerarray, idx_hand); 
 	Eigen::Vector3f handtip = marker2Vector3(markerarray, idx_handtip);
   Eigen::Vector3f thumb = marker2Vector3(markerarray, idx_thumb);
 
@@ -55,7 +55,7 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 	Eigen::Vector3f link23 = (wrist - elbow).normalized();
 	Eigen::Vector3f link34 = (handtip - wrist).normalized();
 	Eigen::Vector3f link35 = (thumb - wrist).normalized();
-  Eigen::Vector3f rose_is_confused = (spinechest - neck).normalized();
+  Eigen::Vector3f plane3 = (spinechest - neck).normalized();
 
 	Eigen::Vector3f plane1 = (neck - shoulder).normalized();
 	Eigen::Vector3f plane2 = (spinechest - shoulder).normalized();
@@ -65,14 +65,14 @@ void Arm::calculateJointAngle(const visualization_msgs::MarkerArray markerarray)
 
   if (type == RIGHT) {
     update_joint_angle[0] = boundMinMax(-3*(acos((link12).dot(ortho_vect))-M_PI/2));
-    update_joint_angle[1] = boundMinMax(atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm()));
+    update_joint_angle[1] = boundMinMax(atan2((plane3).dot(parall_vect), ((plane3).cross(parall_vect)).norm()));
     update_joint_angle[2] = boundMinMax(2*atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm()));
     // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
     update_joint_angle[3] = 0;
     // update_joint_angle[3] = 2*atan2((link34-link35).norm(), (link34+link35).norm());
   } else if (type == LEFT) {
     update_joint_angle[0] = boundMinMax(3*(acos((link12).dot(ortho_vect))-M_PI/2));
-    update_joint_angle[1] = boundMinMax(atan2((rose_is_confused).dot(parall_vect) , ((rose_is_confused).cross(parall_vect)).norm()));
+    update_joint_angle[1] = boundMinMax(atan2((plane3).dot(parall_vect), ((plane3).cross(parall_vect)).norm()));
     update_joint_angle[2] = boundMinMax(2*atan2((-1*link12).dot(link23) , ((-1*link12).cross(link23)).norm()));
     // update_joint_angle[3] = atan2((-1*link23).dot(link34) , (-1*link23).cross(link34).norm());
     update_joint_angle[3] = 0;
