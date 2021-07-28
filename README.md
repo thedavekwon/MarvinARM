@@ -6,6 +6,7 @@ by Do Hyung (Dave) Kwon and Rose Gebhardt
 ```
 ROS Melodic
 Azure Kinect SDK
+Azure Kinect Body Tracking SDK
 Azure Kinect ROS driver
 Openmanipulator X
 ```
