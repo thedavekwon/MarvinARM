@@ -15,9 +15,16 @@ Openmanipulator X
 cd ~/catkin_ws/src
 git clone https://github.com/thedavekwon/MarvinARM.git
 rosdep install --from-paths MarvinARM --ignore-src -r -y
-
 cd ~/catkin_ws
 catkin_make
+```
+
+### Install rosdep 
+```
+# ROS Noetic
+sudo apt-get install python3-rosdep
+# ROS Melodic and earlier
+sudo apt-get install python-rosdep
 ```
 ## Usage
 ```
